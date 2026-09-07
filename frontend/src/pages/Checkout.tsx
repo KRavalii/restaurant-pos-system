@@ -37,9 +37,14 @@ function Checkout() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          cart,
-          totalAmount: total,
-        }),
+  items: cart.map((item) => ({
+    menuItemId: item.id,
+    name: item.name,
+    price: Number(item.price),
+    quantity: item.quantity,
+  })),
+  total: total,
+}),
       });
 
       const data = await response.json();

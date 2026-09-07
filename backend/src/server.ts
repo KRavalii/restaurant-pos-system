@@ -43,17 +43,14 @@ app.get("/api/db-test", async (_req, res) => {
 
 app.get("/api/menu", async (_req, res) => {
   try {
-    const [rows] = await db.query(
-      "SELECT id, name, price, category, available FROM menu_items"
+    const result = await db.query(
+      "SELECT * FROM menu_items ORDER BY id ASC"
     );
 
-    res.json(rows);
+    res.json(result.rows);
   } catch (error) {
-    console.error("Menu API error:", error);
-
-    res.status(500).json({
-      message: "Failed to load menu items",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Failed to load menu items" });
   }
 });
 
@@ -61,43 +58,48 @@ app.post("/api/menu", async (req, res) => {
   try {
     const { name, price, category } = req.body;
 
-    const [result] = await db.query(
-      "INSERT INTO menu_items (name, price, category) VALUES (?, ?, ?)",
+    const result = await db.query(
+      `
+      INSERT INTO menu_items (name, price, category)
+      VALUES ($1, $2, $3)
+      RETURNING *
+      `,
       [name, price, category]
     );
 
-    res.status(201).json({
-      message: "Menu item added successfully",
-      result,
-    });
+    res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error("Add menu item error:", error);
-
-    res.status(500).json({
-      message: "Failed to add menu item",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Failed to add menu item" });
   }
 });
 
 app.put("/api/menu/:id", async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, price, category } = req.body;
+    const { name, price, category, available } = req.body;
 
-    await db.query(
-      "UPDATE menu_items SET name = ?, price = ?, category = ? WHERE id = ?",
-      [name, price, category, id]
+    const result = await db.query(
+      `
+      UPDATE menu_items
+      SET name = $1,
+          price = $2,
+          category = $3,
+          available = $4
+      WHERE id = $5
+      RETURNING *
+      `,
+      [name, price, category, available, id]
     );
 
-    res.json({
-      message: "Menu item updated successfully",
-    });
-  } catch (error) {
-    console.error("Update menu item error:", error);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
 
-    res.status(500).json({
-      message: "Failed to update menu item",
-    });
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Failed to update menu item" });
   }
 });
 
@@ -106,52 +108,58 @@ app.delete("/api/menu/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
-    await db.query(
-      "DELETE FROM menu_items WHERE id = ?",
+    const result = await db.query(
+      `
+      DELETE FROM menu_items
+      WHERE id = $1
+      RETURNING *
+      `,
       [id]
     );
 
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "Menu item not found" });
+    }
+
     res.json({
       message: "Menu item deleted successfully",
+      item: result.rows[0],
     });
   } catch (error) {
-    console.error("Delete menu item error:", error);
-
-    res.status(500).json({
-      message: "Failed to delete menu item",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Failed to delete menu item" });
   }
 });
 
 app.post("/api/orders", async (req, res) => {
-  const connection = await db.getConnection();
+  const client = await db.connect();
 
   try {
-    const { cart, totalAmount } = req.body;
+    const { items, total } = req.body;
 
-    if (!cart || !Array.isArray(cart) || cart.length === 0) {
-      return res.status(400).json({
-        message: "Cart is empty",
-      });
-    }
+    await client.query("BEGIN");
 
-    await connection.beginTransaction();
-
-    const [orderResult]: any = await connection.query(
-      "INSERT INTO orders (total_amount, status) VALUES (?, ?)",
-      [totalAmount, "Placed"]
+    const orderResult = await client.query(
+      `
+      INSERT INTO orders (total_amount, status)
+      VALUES ($1, $2)
+      RETURNING *
+      `,
+      [total, "Placed"]
     );
 
-    const orderId = orderResult.insertId;
+    const order = orderResult.rows[0];
 
-    for (const item of cart) {
-      await connection.query(
-        `INSERT INTO order_items
-        (order_id, menu_item_id, item_name, price, quantity)
-        VALUES (?, ?, ?, ?, ?)`,
+    for (const item of items) {
+      await client.query(
+        `
+        INSERT INTO order_items
+          (order_id, menu_item_id, item_name, price, quantity)
+        VALUES ($1, $2, $3, $4, $5)
+        `,
         [
-          orderId,
-          item.id,
+          order.id,
+          item.menuItemId,
           item.name,
           item.price,
           item.quantity,
@@ -159,40 +167,39 @@ app.post("/api/orders", async (req, res) => {
       );
     }
 
-    await connection.commit();
+    await client.query("COMMIT");
 
     res.status(201).json({
       message: "Order placed successfully",
-      orderId,
+      orderId: order.id,
     });
   } catch (error) {
-    await connection.rollback();
+    await client.query("ROLLBACK");
 
-    console.error("Place order error:", error);
-
-    res.status(500).json({
-      message: "Failed to place order",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Failed to place order" });
   } finally {
-    connection.release();
+    client.release();
   }
 });
 
 app.get("/api/orders", async (_req, res) => {
   try {
-    const [orders]: any = await db.query(
-      `SELECT id, total_amount, status, created_at
-       FROM orders
-       ORDER BY created_at DESC`
-    );
+    const ordersResult = await db.query(`
+      SELECT id, total_amount, status, created_at
+      FROM orders
+      ORDER BY created_at DESC
+    `);
 
     const ordersWithItems = [];
 
-    for (const order of orders) {
-      const [items]: any = await db.query(
-        `SELECT id, menu_item_id, item_name, price, quantity
-         FROM order_items
-         WHERE order_id = ?`,
+    for (const order of ordersResult.rows) {
+      const itemsResult = await db.query(
+        `
+        SELECT id, menu_item_id, item_name, price, quantity
+        FROM order_items
+        WHERE order_id = $1
+        `,
         [order.id]
       );
 
@@ -201,7 +208,7 @@ app.get("/api/orders", async (_req, res) => {
         total: Number(order.total_amount),
         status: order.status,
         createdAt: order.created_at,
-        items: items.map((item: any) => ({
+        items: itemsResult.rows.map((item: any) => ({
           id: item.id,
           menuItemId: item.menu_item_id,
           name: item.item_name,
@@ -213,23 +220,20 @@ app.get("/api/orders", async (_req, res) => {
 
     res.json(ordersWithItems);
   } catch (error) {
-    console.error("Fetch orders error:", error);
-
-    res.status(500).json({
-      message: "Failed to fetch orders",
-    });
+    console.error(error);
+    res.status(500).json({ message: "Failed to load orders" });
   }
 });
 
 app.get("/api/inventory", async (_req, res) => {
   try {
-    const [rows] = await db.query(
-      `SELECT id, name, stock, unit, reorder_level
-       FROM inventory
-       ORDER BY id`
-    );
+    const result = await db.query(`
+      SELECT id, name, stock, unit, reorder_level
+      FROM inventory
+      ORDER BY id
+    `);
 
-    res.json(rows);
+    res.json(result.rows);
   } catch (error) {
     console.error("Fetch inventory error:", error);
 
@@ -244,14 +248,23 @@ app.put("/api/inventory/:id", async (req, res) => {
     const { id } = req.params;
     const { stock } = req.body;
 
-    await db.query(
-      "UPDATE inventory SET stock = ? WHERE id = ?",
+    const result = await db.query(
+      `
+      UPDATE inventory
+      SET stock = $1
+      WHERE id = $2
+      RETURNING *
+      `,
       [stock, id]
     );
 
-    res.json({
-      message: "Inventory updated successfully",
-    });
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        message: "Inventory item not found",
+      });
+    }
+
+    res.json(result.rows[0]);
   } catch (error) {
     console.error("Update inventory error:", error);
 
