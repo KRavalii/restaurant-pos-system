@@ -343,14 +343,15 @@ app.put("/api/tables/:id", async (req, res) => {
       });
     }
 
-    const [result]: any = await db.query(
+    const result = await db.query(
       `UPDATE restaurant_tables
-       SET status = ?
-       WHERE id = ?`,
+       SET status = $1
+       WHERE id = $2
+       RETURNING id, name, seats, status, area`,
       [status, id]
     );
 
-    if (result.affectedRows === 0) {
+    if (result.rowCount === 0) {
       return res.status(404).json({
         message: "Table not found",
       });
@@ -358,9 +359,11 @@ app.put("/api/tables/:id", async (req, res) => {
 
     res.json({
       message: "Table status updated successfully",
+      table: result.rows[0],
     });
   } catch (error) {
     console.error("Update table error:", error);
+
     res.status(500).json({
       message: "Failed to update table status",
     });
