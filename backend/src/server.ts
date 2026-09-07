@@ -26,11 +26,11 @@ app.get("/api/health", (_req, res) => {
 
 app.get("/api/db-test", async (_req, res) => {
   try {
-    const [rows] = await db.query("SELECT 1 + 1 AS result");
+    const result = await db.query("SELECT 1 + 1 AS result");
 
     res.json({
-      message: "MySQL connected successfully",
-      data: rows,
+      message: "PostgreSQL connected successfully",
+      data: result.rows,
     });
   } catch (error) {
     console.error(error);
@@ -311,13 +311,13 @@ app.get("/api/dashboard", async (_req, res) => {
 
 app.get("/api/tables", async (_req, res) => {
   try {
-    const [rows] = await db.query(
+    const result = await db.query(
       `SELECT id, name, seats, status, area
        FROM restaurant_tables
        ORDER BY id`
     );
 
-    res.json(rows);
+    res.json(result.rows);
   } catch (error) {
     console.error("Fetch tables error:", error);
     res.status(500).json({
