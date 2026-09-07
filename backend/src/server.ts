@@ -276,29 +276,29 @@ app.put("/api/inventory/:id", async (req, res) => {
 
 app.get("/api/dashboard", async (_req, res) => {
   try {
-    const [orderRows]: any = await db.query(
-      `SELECT 
-         COUNT(*) AS totalOrders,
-         COALESCE(SUM(total_amount), 0) AS totalRevenue
-       FROM orders`
-    );
+    const orderResult = await db.query(`
+      SELECT
+        COUNT(*) AS "totalOrders",
+        COALESCE(SUM(total_amount), 0) AS "totalRevenue"
+      FROM orders
+    `);
 
-    const [menuRows]: any = await db.query(
-      `SELECT COUNT(*) AS totalMenuItems
-       FROM menu_items`
-    );
+    const menuResult = await db.query(`
+      SELECT COUNT(*) AS "totalMenuItems"
+      FROM menu_items
+    `);
 
-    const [inventoryRows]: any = await db.query(
-      `SELECT COUNT(*) AS lowStockItems
-       FROM inventory
-       WHERE stock <= reorder_level`
-    );
+    const inventoryResult = await db.query(`
+      SELECT COUNT(*) AS "lowStockItems"
+      FROM inventory
+      WHERE stock <= reorder_level
+    `);
 
     res.json({
-      totalOrders: Number(orderRows[0].totalOrders),
-      totalRevenue: Number(orderRows[0].totalRevenue),
-      totalMenuItems: Number(menuRows[0].totalMenuItems),
-      lowStockItems: Number(inventoryRows[0].lowStockItems),
+      totalOrders: Number(orderResult.rows[0].totalOrders),
+      totalRevenue: Number(orderResult.rows[0].totalRevenue),
+      totalMenuItems: Number(menuResult.rows[0].totalMenuItems),
+      lowStockItems: Number(inventoryResult.rows[0].lowStockItems),
     });
   } catch (error) {
     console.error("Dashboard error:", error);
