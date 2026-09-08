@@ -22,9 +22,7 @@ function Seating() {
   useEffect(() => {
     const fetchTables = async () => {
       try {
-        const response = await fetch(
-          `${API_URL}/api/tables`
-        );
+        const response = await fetch(`${API_URL}/api/tables`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch tables");
@@ -58,18 +56,15 @@ function Seating() {
     const newStatus = getNextStatus(table.status);
 
     try {
-      const response = await fetch(
-        `${API_URL}/api/tables/${table.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            status: newStatus,
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/tables/${table.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          status: newStatus,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to update table");
@@ -100,12 +95,12 @@ function Seating() {
   };
 
   return (
-    <div className="flex bg-[#f6f1ff] min-h-screen">
+    <div className="flex flex-col md:flex-row bg-[#f6f1ff] min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 p-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-[#7c5cff]">
+      <main className="flex-1 w-full min-w-0 p-4 md:p-8">
+        <div className="mb-6 md:mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-[#7c5cff]">
             Restaurant Seating
           </h1>
 
@@ -114,7 +109,7 @@ function Seating() {
           </p>
         </div>
 
-        <div className="flex gap-6 bg-white p-4 rounded-2xl shadow-sm mb-8">
+        <div className="flex flex-wrap gap-3 md:gap-6 bg-white p-4 rounded-2xl shadow-sm mb-6 md:mb-8">
           <span className="text-green-600 font-semibold">
             ● Available
           </span>
@@ -129,34 +124,34 @@ function Seating() {
         </div>
 
         {loading ? (
-          <div className="bg-white p-6 rounded-3xl shadow-md">
+          <div className="bg-white p-5 md:p-6 rounded-3xl shadow-md">
             <p className="text-gray-400">
               Loading restaurant tables...
             </p>
           </div>
         ) : (
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             {areas.map((area) => (
               <section
                 key={area}
-                className="bg-white rounded-3xl p-6 shadow-md"
+                className="bg-white rounded-3xl p-4 md:p-6 shadow-md"
               >
-                <h2 className="text-2xl font-bold text-[#2d1b69] mb-6">
+                <h2 className="text-xl md:text-2xl font-bold text-[#2d1b69] mb-4 md:mb-6">
                   {area}
                 </h2>
 
-                <div className="grid grid-cols-3 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
                   {tables
                     .filter((table) => table.area === area)
                     .map((table) => (
                       <button
                         key={table.id}
                         onClick={() => updateTableStatus(table)}
-                        className={`border-2 rounded-3xl p-6 min-h-[160px]
-                          hover:scale-105 transition-all duration-300
+                        className={`w-full border-2 rounded-3xl p-4 md:p-6 min-h-[140px] md:min-h-[160px]
+                          hover:scale-[1.02] transition-all duration-300
                           ${getStatusStyle(table.status)}`}
                       >
-                        <div className="text-3xl font-bold">
+                        <div className="text-2xl md:text-3xl font-bold break-words">
                           {table.name}
                         </div>
 

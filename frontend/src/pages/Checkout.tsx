@@ -37,14 +37,14 @@ function Checkout() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-  items: cart.map((item) => ({
-    menuItemId: item.id,
-    name: item.name,
-    price: Number(item.price),
-    quantity: item.quantity,
-  })),
-  total: total,
-}),
+          items: cart.map((item) => ({
+            menuItemId: item.id,
+            name: item.name,
+            price: Number(item.price),
+            quantity: item.quantity,
+          })),
+          total: total,
+        }),
       });
 
       const data = await response.json();
@@ -64,37 +64,35 @@ function Checkout() {
   };
 
   return (
-    <div className="flex bg-[#f6f1ff] min-h-screen">
+    <div className="flex flex-col md:flex-row bg-[#f6f1ff] min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 p-8">
-        <h1 className="text-4xl font-bold text-[#7c5cff] mb-8">
+      <main className="flex-1 w-full min-w-0 p-4 md:p-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#7c5cff] mb-6 md:mb-8">
           Checkout
         </h1>
 
-        <div className="grid grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
           {/* ORDER SUMMARY */}
-          <div className="bg-white rounded-3xl p-6 shadow-lg">
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="bg-white rounded-3xl p-4 md:p-6 shadow-lg">
+            <h2 className="text-xl md:text-2xl font-bold mb-6">
               Order Summary
             </h2>
 
             <div className="space-y-4">
               {cart.length === 0 ? (
-                <p className="text-gray-400">
-                  No items in cart
-                </p>
+                <p className="text-gray-400">No items in cart</p>
               ) : (
                 cart.map((item) => (
                   <div
                     key={item.id}
-                    className="flex justify-between"
+                    className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 bg-[#f6f1ff] sm:bg-transparent p-3 sm:p-0 rounded-xl"
                   >
-                    <span>
+                    <span className="break-words">
                       {item.name} x {item.quantity}
                     </span>
 
-                    <span>
+                    <span className="font-medium">
                       ${(item.price * item.quantity).toFixed(2)}
                     </span>
                   </div>
@@ -103,17 +101,17 @@ function Checkout() {
             </div>
 
             <div className="border-t mt-6 pt-4 space-y-3">
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
                 <span>Subtotal</span>
                 <span>${subtotal.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-4">
                 <span>Tax</span>
                 <span>${tax.toFixed(2)}</span>
               </div>
 
-              <div className="flex justify-between text-xl font-bold">
+              <div className="flex justify-between gap-4 text-lg md:text-xl font-bold">
                 <span>Total</span>
 
                 <span className="text-[#7c5cff]">
@@ -124,13 +122,13 @@ function Checkout() {
           </div>
 
           {/* PAYMENT SECTION */}
-          <div className="bg-white rounded-3xl p-6 shadow-lg">
-            <h2 className="text-2xl font-bold mb-6">
+          <div className="bg-white rounded-3xl p-4 md:p-6 shadow-lg">
+            <h2 className="text-xl md:text-2xl font-bold mb-6">
               Payment Method
             </h2>
 
             <div className="space-y-4">
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 bg-[#f6f1ff] p-4 rounded-xl cursor-pointer">
                 <input
                   type="radio"
                   name="payment"
@@ -139,7 +137,7 @@ function Checkout() {
                 <span>Card</span>
               </label>
 
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 bg-[#f6f1ff] p-4 rounded-xl cursor-pointer">
                 <input
                   type="radio"
                   name="payment"
@@ -147,7 +145,7 @@ function Checkout() {
                 <span>Cash</span>
               </label>
 
-              <label className="flex items-center gap-3">
+              <label className="flex items-center gap-3 bg-[#f6f1ff] p-4 rounded-xl cursor-pointer">
                 <input
                   type="radio"
                   name="payment"

@@ -33,7 +33,6 @@ function Orders() {
         }
 
         const data = await response.json();
-
         setOrders(data);
       } catch (error) {
         console.error("Orders error:", error);
@@ -46,74 +45,64 @@ function Orders() {
   }, []);
 
   return (
-    <div className="flex bg-[#f6f1ff] min-h-screen">
+    <div className="flex flex-col md:flex-row bg-[#f6f1ff] min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 p-8">
-        <h1 className="text-4xl font-bold text-[#7c5cff] mb-8">
+      <main className="flex-1 w-full min-w-0 p-4 md:p-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#7c5cff] mb-6 md:mb-8">
           Orders
         </h1>
 
         {loading ? (
-          <div className="bg-white p-6 rounded-3xl shadow-md">
-            <p className="text-gray-400">
-              Loading orders...
-            </p>
+          <div className="bg-white p-5 md:p-6 rounded-3xl shadow-md">
+            <p className="text-gray-400">Loading orders...</p>
           </div>
         ) : orders.length === 0 ? (
-          <div className="bg-white p-6 rounded-3xl shadow-md">
-            <p className="text-gray-400">
-              No orders placed yet.
-            </p>
+          <div className="bg-white p-5 md:p-6 rounded-3xl shadow-md">
+            <p className="text-gray-400">No orders placed yet.</p>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {orders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white p-6 rounded-3xl shadow-md"
+                className="bg-white p-4 md:p-6 rounded-3xl shadow-md"
               >
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
                   <div>
-                    <h2 className="text-xl font-bold">
+                    <h2 className="text-lg md:text-xl font-bold">
                       Order #{order.id}
                     </h2>
 
-                    <p className="text-sm text-gray-400">
-                      {new Date(
-                        order.createdAt
-                      ).toLocaleString()}
+                    <p className="text-xs md:text-sm text-gray-400 break-words">
+                      {new Date(order.createdAt).toLocaleString()}
                     </p>
                   </div>
 
-                  <span className="bg-[#e9ddff] text-[#7c5cff] px-4 py-2 rounded-full font-semibold">
+                  <span className="self-start sm:self-auto bg-[#e9ddff] text-[#7c5cff] px-4 py-2 rounded-full font-semibold text-sm">
                     {order.status}
                   </span>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {order.items.map((item) => (
                     <div
                       key={item.id}
-                      className="flex justify-between"
+                      className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 bg-[#f6f1ff] sm:bg-transparent p-3 sm:p-0 rounded-xl"
                     >
-                      <span>
+                      <span className="break-words">
                         {item.name} x {item.quantity}
                       </span>
 
-                      <span>
-                        $
-                        {(
-                          item.price *
-                          item.quantity
-                        ).toFixed(2)}
+                      <span className="font-medium text-[#7c5cff] sm:text-black">
+                        ${(item.price * item.quantity).toFixed(2)}
                       </span>
                     </div>
                   ))}
                 </div>
 
                 <div className="border-t mt-5 pt-4">
-                  <div className="flex justify-between font-bold text-lg">
+                  <div className="flex justify-between items-center font-bold text-base md:text-lg">
                     <span>Total</span>
 
                     <span className="text-[#7c5cff]">

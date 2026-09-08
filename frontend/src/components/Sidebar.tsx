@@ -13,12 +13,12 @@ function Sidebar() {
   ];
 
   return (
-    <div className="w-64 bg-white min-h-screen p-6 shadow-lg">
-      <h2 className="text-3xl font-bold text-[#7c5cff] mb-10">
+    <div className="w-full md:w-64 bg-white md:min-h-screen p-4 md:p-6 shadow-lg">
+      <h2 className="text-2xl md:text-3xl font-bold text-[#7c5cff] mb-4 md:mb-10">
         Restaurant POS
       </h2>
 
-      <nav className="space-y-4">
+      <nav className="grid grid-cols-2 gap-2 md:block md:space-y-4">
         {menuItems.map((item) => {
           const isActive = location.pathname === item.path;
 
@@ -26,7 +26,7 @@ function Sidebar() {
             <Link
               key={item.name}
               to={item.path}
-              className={`block px-5 py-3 rounded-2xl transition-all duration-300 font-medium
+              className={`block text-center md:text-left px-3 md:px-5 py-3 rounded-2xl transition-all duration-300 font-medium
                 ${
                   isActive
                     ? "bg-[#a78bfa] text-white shadow-md"

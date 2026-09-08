@@ -18,14 +18,13 @@ function Inventory() {
   useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const response = await fetch( `${API_URL}/api/inventory`);
+        const response = await fetch(`${API_URL}/api/inventory`);
 
         if (!response.ok) {
           throw new Error("Failed to fetch inventory");
         }
 
         const data = await response.json();
-
         setInventoryItems(data);
       } catch (error) {
         console.error("Inventory fetch error:", error);
@@ -39,18 +38,15 @@ function Inventory() {
 
   const updateStock = async (id: number, newStock: number) => {
     try {
-      const response = await fetch(
-         `${API_URL}/api/inventory/${id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            stock: newStock,
-          }),
-        }
-      );
+      const response = await fetch(`${API_URL}/api/inventory/${id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          stock: newStock,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to update inventory");
@@ -58,9 +54,7 @@ function Inventory() {
 
       setInventoryItems((prevItems) =>
         prevItems.map((item) =>
-          item.id === id
-            ? { ...item, stock: newStock }
-            : item
+          item.id === id ? { ...item, stock: newStock } : item
         )
       );
     } catch (error) {
@@ -105,40 +99,36 @@ function Inventory() {
   };
 
   return (
-    <div className="flex bg-[#f6f1ff] min-h-screen">
+    <div className="flex flex-col md:flex-row bg-[#f6f1ff] min-h-screen">
       <Sidebar />
 
-      <main className="flex-1 p-8">
-        <h1 className="text-4xl font-bold text-[#7c5cff] mb-2">
+      <main className="flex-1 w-full min-w-0 p-4 md:p-8">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#7c5cff] mb-2">
           Inventory
         </h1>
 
-        <p className="text-gray-500 mb-8">
+        <p className="text-gray-500 mb-6 md:mb-8">
           Manage restaurant ingredients and stock levels
         </p>
 
         {loading ? (
-          <div className="bg-white p-6 rounded-3xl shadow-md">
-            <p className="text-gray-400">
-              Loading inventory...
-            </p>
+          <div className="bg-white p-5 md:p-6 rounded-3xl shadow-md">
+            <p className="text-gray-400">Loading inventory...</p>
           </div>
         ) : inventoryItems.length === 0 ? (
-          <div className="bg-white p-6 rounded-3xl shadow-md">
-            <p className="text-gray-400">
-              No inventory items found.
-            </p>
+          <div className="bg-white p-5 md:p-6 rounded-3xl shadow-md">
+            <p className="text-gray-400">No inventory items found.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
             {inventoryItems.map((item) => (
               <div
                 key={item.id}
-                className="bg-white p-6 rounded-3xl shadow-md"
+                className="bg-white p-4 md:p-6 rounded-3xl shadow-md w-full min-w-0"
               >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-bold">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3">
+                  <div className="min-w-0">
+                    <h2 className="text-lg md:text-xl font-bold break-words">
                       {item.name}
                     </h2>
 
@@ -147,13 +137,12 @@ function Inventory() {
                     </p>
 
                     <p className="text-sm text-gray-400 mt-1">
-                      Reorder level: {item.reorder_level}{" "}
-                      {item.unit}
+                      Reorder level: {item.reorder_level} {item.unit}
                     </p>
                   </div>
 
                   <span
-                    className={`px-4 py-2 rounded-full text-sm font-semibold ${getStatusStyle(
+                    className={`self-start px-3 md:px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap ${getStatusStyle(
                       item
                     )}`}
                   >
@@ -170,7 +159,7 @@ function Inventory() {
                     -
                   </button>
 
-                  <span className="text-lg font-bold">
+                  <span className="text-lg font-bold min-w-[30px] text-center">
                     {item.stock}
                   </span>
 
