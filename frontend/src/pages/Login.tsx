@@ -37,6 +37,9 @@ function Login() {
           >
             Login
           </button>
+          <p className="text-center text-sm text-gray-500 mt-4">
+              Demo Mode — enter any email and password to continue
+          </p>
         </div>
       </div>
     </div>

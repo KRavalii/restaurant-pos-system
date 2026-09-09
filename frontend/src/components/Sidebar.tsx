@@ -1,7 +1,8 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
 function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const menuItems = [
     { name: "Dashboard", path: "/dashboard" },
@@ -11,6 +12,10 @@ function Sidebar() {
     { name: "Inventory", path: "/inventory" },
     { name: "Seating", path: "/seating" },
   ];
+
+  const handleLogout = () => {
+    navigate("/");
+  };
 
   return (
     <div className="w-full md:w-64 bg-white md:min-h-screen p-4 md:p-6 shadow-lg">
@@ -39,6 +44,13 @@ function Sidebar() {
           );
         })}
       </nav>
+
+      <button
+        onClick={handleLogout}
+        className="w-full mt-4 md:mt-8 px-3 md:px-5 py-3 rounded-2xl font-medium bg-red-50 text-red-500 hover:bg-red-500 hover:text-white transition-all duration-300"
+      >
+        Logout
+      </button>
     </div>
   );
 }
